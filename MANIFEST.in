@@ -1,0 +1,3 @@
+include fastentrypoints.py
+include versioneer.py
+include zeldabuilder/_version.py
