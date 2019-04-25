@@ -87,11 +87,22 @@ def dump_aamp(data: bytes):
 
 _NO_CONVERSION = ("", lambda: "")
 def convert_binary_to_text(rel_path: Path, data: bytes) -> typing.Tuple[str, typing.Callable[[], str]]:
-    if str(rel_path).startswith("Actor/AnimationInfo"):
+    rel_path_s = rel_path.as_posix()
+
+    if rel_path_s.startswith("Actor/AnimationInfo"):
         return _NO_CONVERSION
 
     # Handled by process_map_units.
     if rel_path.suffix == ".mubin":
+        return _NO_CONVERSION
+    # Handled by process_actorinfo.
+    if rel_path_s == "Actor/ActorInfo.product.byml":
+        return _NO_CONVERSION
+    # Handled by process_eventinfo.
+    if rel_path_s == "Event/EventInfo.product.byml":
+        return _NO_CONVERSION
+    # Handled by process_questproduct.
+    if rel_path_s == "Quest/QuestProduct.bquestpack":
         return _NO_CONVERSION
 
     if data[0:4] == b'BY\x00\x02' or data[0:4] == b'YB\x02\x00':
