@@ -90,6 +90,10 @@ def convert_binary_to_text(rel_path: Path, data: bytes) -> typing.Tuple[str, typ
     if str(rel_path).startswith("Actor/AnimationInfo"):
         return _NO_CONVERSION
 
+    # Handled by process_map_units.
+    if rel_path.suffix == ".mubin":
+        return _NO_CONVERSION
+
     if data[0:4] == b'BY\x00\x02' or data[0:4] == b'YB\x02\x00':
         return (".yml", lambda: dump_byml(data))
 
@@ -165,27 +169,22 @@ def convert_messages(dest_dir: Path):
     for msbt_path in message_dir.glob("**/*.msbt"):
         msbt_path.unlink()
 
-def merge_map_units(dest_dir: Path):
+def process_map_units(dest_dir: Path):
     def add_is_static_to_entries(map_unit: dict, is_static: bool) -> None:
         for entry in map_unit["Objs"]:
             entry["IsStatic"] = is_static
 
     def process_map_unit_unit(unit_dir: Path):
         unit_name = unit_dir.stem
-        static_p = unit_dir / f"{unit_name}_Static.mubin.yml"
-        dynamic_p = unit_dir / f"{unit_name}_Dynamic.mubin.yml"
+        static_p = unit_dir / f"{unit_name}_Static.mubin"
+        dynamic_p = unit_dir / f"{unit_name}_Dynamic.mubin"
         if not static_p.is_file() or not dynamic_p.is_file():
             return
 
-        class Loader(yaml.CLoader):
-            pass
-        class Dumper(yaml.CDumper):
-            pass
-        byml.yaml_util.add_constructors(Loader)
-        byml.yaml_util.add_representers(Dumper)
-        with static_p.open("r") as static_f, dynamic_p.open("r") as dynamic_f:
-            static_d = yaml.load(static_f, Loader=Loader)
-            dynamic_d = yaml.load(dynamic_f, Loader=Loader)
+        with static_p.open("rb") as static_f, dynamic_p.open("rb") as dynamic_f:
+            static_d = byml.Byml(static_f.read()).parse()
+            dynamic_d = byml.Byml(dynamic_f.read()).parse()
+            assert isinstance(static_d, dict) and isinstance(dynamic_d, dict)
 
         add_is_static_to_entries(static_d, is_static=True)
         add_is_static_to_entries(dynamic_d, is_static=False)
@@ -199,15 +198,23 @@ def merge_map_units(dest_dir: Path):
         merged_map_unit["Objs"] = objs
         merged_map_unit["Rails"] = rails
 
-        merged_p = unit_dir / f"{unit_name}.mubin.yml"
+        merged_p = unit_dir / f"{unit_name}.muunt.yml"
         with merged_p.open("w") as f:
-            yaml.dump(merged_map_unit, f, Dumper=Dumper, allow_unicode=True, encoding="utf-8")
+            dump_byml_data(merged_map_unit, f)
 
         static_p.unlink()
         dynamic_p.unlink()
 
+    def process_mubin(path: Path):
+        dest_path = path.with_suffix(path.suffix + ".yml")
+        with path.open("rb") as f, dest_path.open("w") as destf:
+            dump_byml(f.read(), destf)
+        path.unlink()
+
     Parallel(n_jobs=_num_cores, verbose=10, batch_size=1)(delayed(process_map_unit_unit)(unit_dir)
         for unit_dir in (dest_dir / "Map").glob("*/*") if unit_dir.is_dir())
+    Parallel(n_jobs=_num_cores, verbose=10, batch_size=1)(delayed(process_mubin)(path)
+        for path in (dest_dir / "Map").glob("**/*.mubin"))
 
 def process_actorinfo(dest_dir: Path, platform: str):
     pass
@@ -227,7 +234,7 @@ def unbuild(src_rom_dir: Path, dest_dir: Path, platform: str, aoc_dir: typing.Op
         unbuild_resources(aoc_dir, dest_dir, is_aoc=True)
         remove_unneeded_aoc_suffixes(dest_dir)
     convert_messages(dest_dir)
-    merge_map_units(dest_dir)
+    process_map_units(dest_dir)
     process_actorinfo(dest_dir, platform)
     process_eventinfo(dest_dir)
     process_questproduct(dest_dir)
