@@ -43,7 +43,7 @@ class FileDeviceArchive(FileDevice):
             yield Path(name)
 
     def read_file(self, path: Path):
-        return self._archive.get_file_data(str(path))
+        return bytes(self._archive.get_file_data(str(path)))
 
 def remove_extension_prefix_char_from_path(path: Path, prefix_char: str) -> Path:
     if path.suffix.startswith("." + prefix_char):
