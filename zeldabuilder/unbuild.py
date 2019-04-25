@@ -69,25 +69,32 @@ def is_unhandled_content(path: Path):
 def is_resource_pack_path(path: Path):
     return path.suffix in ['.sbactorpack', '.sbeventpack', '.bactorpack', '.beventpack', '.pack']
 
+def dump_byml_data(data, stream=None) -> None:
+    class Dumper(yaml.CDumper): pass
+    byml.yaml_util.add_representers(Dumper)
+    return yaml.dump(data, stream=stream, Dumper=Dumper, allow_unicode=True, encoding="utf-8")
+
+def dump_byml(data: bytes, stream=None):
+    return dump_byml_data(byml.Byml(data).parse(), stream)
+
+def dump_aamp(data: bytes):
+    class Dumper(yaml.CDumper): pass
+    reader = aamp.Reader(data, track_strings=True)
+    aamp_root = reader.parse()
+    aamp.yaml_util.register_representers(Dumper)
+    Dumper.__aamp_reader = reader
+    return yaml.dump(aamp_root, Dumper=Dumper, allow_unicode=True, encoding="utf-8")
+
 _NO_CONVERSION = ("", lambda: "")
 def convert_binary_to_text(rel_path: Path, data: bytes) -> typing.Tuple[str, typing.Callable[[], str]]:
     if str(rel_path).startswith("Actor/AnimationInfo"):
         return _NO_CONVERSION
 
-    class Dumper(yaml.CDumper):
-        pass
-
     if data[0:4] == b'BY\x00\x02' or data[0:4] == b'YB\x02\x00':
-        byml_root = byml.Byml(bytes(data)).parse()
-        byml.yaml_util.add_representers(Dumper)
-        return (".yml", lambda: yaml.dump(byml_root, Dumper=Dumper, allow_unicode=True, encoding="utf-8"))
+        return (".yml", lambda: dump_byml(data))
 
     if data[0:4] == b'AAMP':
-        aamp.yaml_util.register_representers(Dumper)
-        reader = aamp.Reader(bytes(data), track_strings=True)
-        aamp_root = reader.parse()
-        Dumper.__aamp_reader = reader
-        return (".yml", lambda: yaml.dump(aamp_root, Dumper=Dumper, allow_unicode=True, encoding="utf-8"))
+        return (".yml", lambda: dump_aamp(data))
 
     return _NO_CONVERSION
 
