@@ -1,0 +1,196 @@
+keys:
+- always_movie
+- as
+- auto_save
+- bgm
+- bgm_stop
+- camera
+- child
+- cloth_centererd_at_location
+- demo_event
+- disable_event_start_interval
+- elink_user
+- exist_disable_camera_input
+- exist_disable_getoff_sunaz_in_event
+- exist_disable_unequip_in_event
+- exist_disable_unlift_in_event
+- exist_enable_camera_input
+- exist_enable_squat_in_event
+- exist_extra_model
+- exist_fade_in
+- exist_flag_control
+- exist_gimmick_reset
+- fade_in_color
+- fade_out_color
+- fade_outs
+- init_camera_at
+- init_camera_fov
+- init_camera_pos
+- is_hide_non_demo_member
+- is_hide_non_demo_member_charactor
+- is_pause_non_demo_member
+- is_startable_air
+- is_timeline
+- last_camera_at
+- last_camera_fov
+- last_camera_pos
+- last_player_dir
+- last_player_pos
+- last_special_actor_dir
+- last_special_actor_pos
+- mode
+- movie
+- next_event
+- no_pause_actors
+- not_found_movie
+- slink_user
+- special_actor_name
+- sub_timelines
+- subfile
+- terrain_info
+- text_only_movie
+- timeline_rumble
+- timeline_voice
+- traverse_limit
+- ui_texts
+- vanish_motorcycle
+- wait_frame
+- xlink_emits
+- xlink_hidden
+keys_per_mode:
+  FullPackage:
+  - always_movie
+  - as
+  - auto_save
+  - bgm_stop
+  - camera
+  - child
+  - cloth_centererd_at_location
+  - demo_event
+  - disable_event_start_interval
+  - elink_user
+  - exist_extra_model
+  - exist_fade_in
+  - exist_flag_control
+  - fade_in_color
+  - fade_out_color
+  - fade_outs
+  - init_camera_at
+  - init_camera_fov
+  - init_camera_pos
+  - is_hide_non_demo_member
+  - is_hide_non_demo_member_charactor
+  - is_startable_air
+  - is_timeline
+  - last_camera_at
+  - last_camera_fov
+  - last_camera_pos
+  - last_player_dir
+  - last_player_pos
+  - last_special_actor_dir
+  - last_special_actor_pos
+  - mode
+  - movie
+  - next_event
+  - not_found_movie
+  - special_actor_name
+  - sub_timelines
+  - terrain_info
+  - text_only_movie
+  - timeline_rumble
+  - timeline_voice
+  - traverse_limit
+  - ui_texts
+  - xlink_emits
+  - xlink_hidden
+  Load:
+  - always_movie
+  - as
+  - bgm
+  - bgm_stop
+  - camera
+  - child
+  - demo_event
+  - disable_event_start_interval
+  - elink_user
+  - exist_extra_model
+  - fade_in_color
+  - fade_out_color
+  - init_camera_at
+  - init_camera_fov
+  - init_camera_pos
+  - is_hide_non_demo_member
+  - is_hide_non_demo_member_charactor
+  - is_startable_air
+  - is_timeline
+  - last_camera_at
+  - last_camera_fov
+  - last_camera_pos
+  - last_player_dir
+  - last_player_pos
+  - last_special_actor_dir
+  - last_special_actor_pos
+  - mode
+  - movie
+  - next_event
+  - no_pause_actors
+  - slink_user
+  - special_actor_name
+  - sub_timelines
+  - subfile
+  - terrain_info
+  - timeline_voice
+  - traverse_limit
+  - vanish_motorcycle
+  - xlink_hidden
+  Seamless:
+  - always_movie
+  - as
+  - auto_save
+  - bgm
+  - bgm_stop
+  - camera
+  - child
+  - demo_event
+  - disable_event_start_interval
+  - elink_user
+  - exist_disable_camera_input
+  - exist_disable_getoff_sunaz_in_event
+  - exist_disable_unequip_in_event
+  - exist_disable_unlift_in_event
+  - exist_enable_camera_input
+  - exist_enable_squat_in_event
+  - exist_extra_model
+  - exist_fade_in
+  - exist_flag_control
+  - exist_gimmick_reset
+  - fade_in_color
+  - fade_out_color
+  - init_camera_at
+  - init_camera_fov
+  - init_camera_pos
+  - is_hide_non_demo_member
+  - is_hide_non_demo_member_charactor
+  - is_pause_non_demo_member
+  - is_startable_air
+  - is_timeline
+  - last_camera_at
+  - last_camera_fov
+  - last_camera_pos
+  - last_player_dir
+  - last_player_pos
+  - last_special_actor_dir
+  - last_special_actor_pos
+  - mode
+  - movie
+  - no_pause_actors
+  - slink_user
+  - special_actor_name
+  - sub_timelines
+  - subfile
+  - terrain_info
+  - timeline_rumble
+  - vanish_motorcycle
+  - wait_frame
+  - xlink_hidden
+
