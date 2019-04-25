@@ -120,7 +120,7 @@ def unbuild_resources(src_rom_dir: Path, dest_dir: Path, is_aoc: bool):
                 process_resource(archive_file_device, srp)
         else:
             dest_rel_path = file.remove_extension_prefix_char_from_path(rel_path, 's')
-            text_ext, text_data_get = convert_binary_to_text(rel_path, data)
+            text_ext, text_data_get = convert_binary_to_text(dest_rel_path, data)
             if text_ext:
                 dest_rel_path = file.remove_extension_prefix_char_from_path(dest_rel_path, 'b')
                 dest_rel_path = dest_rel_path.with_suffix(dest_rel_path.suffix + text_ext)
