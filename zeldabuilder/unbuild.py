@@ -69,10 +69,10 @@ def is_unhandled_content(path: Path):
 def is_resource_pack_path(path: Path):
     return path.suffix in ['.sbactorpack', '.sbeventpack', '.bactorpack', '.beventpack', '.pack']
 
-def dump_byml_data(data, stream=None) -> None:
+def dump_byml_data(data, stream=None, default_flow_style=None) -> None:
     class Dumper(yaml.CDumper): pass
     byml.yaml_util.add_representers(Dumper)
-    return yaml.dump(data, stream=stream, Dumper=Dumper, allow_unicode=True, encoding="utf-8")
+    return yaml.dump(data, stream=stream, Dumper=Dumper, allow_unicode=True, encoding="utf-8", default_flow_style=default_flow_style)
 
 def dump_byml(data: bytes, stream=None):
     return dump_byml_data(byml.Byml(data).parse(), stream)
@@ -227,8 +227,80 @@ def process_map_units(dest_dir: Path):
     Parallel(n_jobs=_num_cores, verbose=10, batch_size=1)(delayed(process_mubin)(path)
         for path in (dest_dir / "Map").glob("**/*.mubin"))
 
-def process_actorinfo(dest_dir: Path, platform: str):
-    pass
+_ACTOR_META_KEYS = [
+    "aabbMin",
+    "aabbMax",
+    "addColorR",
+    "addColorG",
+    "addColorB",
+    "addColorA",
+    "baseScaleX",
+    "baseScaleY",
+    "baseScaleZ",
+    "boundingForTraverse",
+    "bugMask",
+    "Chemical",
+    "cursorOffsetY",
+    "farModelCulling",
+    "homeArea",
+    "locators",
+    "lookAtOffsetY",
+    "motorcycleEnergy",
+    "rigidBodyCenterY",
+    "sortKey",
+    "terrainTextures",
+    "traverseDist",
+    "variationMatAnim",
+    "variationMatAnimFrame",
+]
+def process_actorinfo(dest_dir: Path, platform: str, other_platform_actorinfo_path: typing.Optional[Path]):
+    # Create the new ActorMeta / DevActorMeta directories (which are extensions).
+    dest_devactormeta_dir = dest_dir / "Actor" / "DevActorMeta"
+    dest_devactormeta_dir.mkdir(exist_ok=True)
+    dest_actormeta_dir = dest_dir / "Actor" / "ActorMeta"
+    dest_actormeta_dir.mkdir(exist_ok=True)
+
+    actorinfo_byml = dest_dir / "Actor" / "ActorInfo.product.byml"
+    with actorinfo_byml.open("rb") as f:
+        actorinfo = byml.Byml(f.read()).parse()
+        assert isinstance(actorinfo, dict)
+
+    other_platform = "cafe" if platform == "nx" else "nx"
+    other_actorinfo: typing.Optional[dict] = None
+    if other_platform_actorinfo_path:
+        # A temporary variable is needed to avoid a mypy error...
+        tmp = byml.Byml(wszst_yaz0.decompress_file(str(other_platform_actorinfo_path))).parse()
+        assert isinstance(tmp, dict)
+        other_actorinfo = tmp
+
+    def fill_in_inst_size(i: int, entry: dict) -> None:
+        entry["instSizeCafe"] = -1
+        entry["instSizeNx"] = -1
+        entry[f"instSize{platform.capitalize()}"] = actor["instSize"]
+        if other_actorinfo:
+            other_actor = other_actorinfo["Actors"][i]
+            assert other_actor["name"] == actor["name"]
+            entry[f"instSize{other_platform.capitalize()}"] = other_actor["instSize"]
+        entry.pop("instSize", None)
+
+    for i, actor in enumerate(actorinfo["Actors"]):
+        is_dev_actor = not (dest_dir / "Actor" / "ActorLink" / f"{actor['name']}.yml").is_file()
+        actor_meta: typing.Dict[str, typing.Any] = dict()
+        if is_dev_actor:
+            actor_meta_path = dest_devactormeta_dir / f"{actor['name']}.yml"
+            actor_meta = actor.copy()
+            fill_in_inst_size(i, actor_meta)
+        else:
+            actor_meta_path = dest_actormeta_dir / f"{actor['name']}.yml"
+            fill_in_inst_size(i, actor_meta)
+            for key in _ACTOR_META_KEYS:
+                if key in actor:
+                    actor_meta[key] = actor[key]
+
+        with actor_meta_path.open("w") as f:
+            dump_byml_data(actor_meta, f, default_flow_style=False)
+
+    actorinfo_byml.unlink()
 
 def process_eventinfo(dest_dir: Path):
     pass
@@ -239,14 +311,14 @@ def process_questproduct(dest_dir: Path):
 def process_gamedata(dest_dir: Path):
     pass
 
-def unbuild(src_rom_dir: Path, dest_dir: Path, platform: str, aoc_dir: typing.Optional[Path]) -> None:
+def unbuild(src_rom_dir: Path, dest_dir: Path, platform: str, other_platform_actorinfo_path: typing.Optional[Path], aoc_dir: typing.Optional[Path]) -> None:
     unbuild_resources(src_rom_dir, dest_dir, is_aoc=False)
     if aoc_dir:
         unbuild_resources(aoc_dir, dest_dir, is_aoc=True)
         remove_unneeded_aoc_suffixes(dest_dir)
     convert_messages(dest_dir)
     process_map_units(dest_dir)
-    process_actorinfo(dest_dir, platform)
+    process_actorinfo(dest_dir, platform, other_platform_actorinfo_path)
     process_eventinfo(dest_dir)
     process_questproduct(dest_dir)
     process_gamedata(dest_dir)
