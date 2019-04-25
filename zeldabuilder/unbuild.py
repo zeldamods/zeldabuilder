@@ -1,7 +1,9 @@
+from collections import defaultdict
 from joblib import Parallel, delayed
 import multiprocessing
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import typing
@@ -334,7 +336,35 @@ def process_questproduct(dest_dir: Path):
     byml_path.unlink()
 
 def process_gamedata(dest_dir: Path):
-    pass
+    gamedata_dir = dest_dir / "GameData"
+    (gamedata_dir / "ShopGameDataInfo.yml").unlink()
+    shutil.rmtree(gamedata_dir / "savedataformat.sarc")
+
+    gamedata_arc_dir = gamedata_dir / "gamedata.sarc"
+
+    flags: typing.DefaultDict[str, typing.List[typing.Any]] = defaultdict(list)
+    flag_types: typing.Dict[str, str] = dict()
+    for bgdata_path in sorted(gamedata_arc_dir.glob("*.bgdata")):
+        series = bgdata_path.stem[:-2]
+        with bgdata_path.open("rb") as f:
+            gdata = byml.Byml(f.read()).parse()
+        assert isinstance(gdata, dict)
+        assert len(gdata) == 1
+        flag_type = list(gdata.keys())[0]
+        flags[series] += gdata[flag_type]
+        if series in flag_types:
+            assert flag_types[series] == flag_type
+        flag_types[series] = flag_type
+
+    for series, merged_flags in flags.items():
+        merged_gdata: dict = dict()
+        merged_gdata[flag_types[series]] = merged_flags
+        dest_path = dest_dir / "GameData" / "Flag" / f"{series}.yml"
+        dest_path.parent.mkdir(exist_ok=True, parents=True)
+        with dest_path.open("w") as f:
+            dump_byml_data(merged_gdata, f)
+
+    shutil.rmtree(gamedata_arc_dir)
 
 def unbuild(src_rom_dir: Path, dest_dir: Path, platform: str, other_platform_actorinfo_path: typing.Optional[Path], aoc_dir: typing.Optional[Path]) -> None:
     unbuild_resources(src_rom_dir, dest_dir, is_aoc=False)

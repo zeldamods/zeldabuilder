@@ -145,7 +145,7 @@ savedataformat.sarc and ShopGameDataInfo.byml are to be removed from the pseudo-
 
 ##### gamedata.sarc
 
-bgdata files must be merged based on their file name. They are to be named using the pattern `filename_%d.bgdata` --> `filename.yml`.
+bgdata files must be merged based on their file name. They are to be named using the pattern `GameData/gamedata.sarc/filename_%d.bgdata` --> `GameData/Flag/filename.yml`.
 
 For example, `bool_data_0.bgdata`, `bool_data_1.bgdata`, and `bool_data_2.bgdata` should be merged into a single `bool_data.yml` file. Note that the `revival_bool_data_%d` files are separate even though `bool_data` and `revival_bool_data` both contain boolean GameData flags.
 
