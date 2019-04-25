@@ -320,7 +320,18 @@ def process_eventinfo(dest_dir: Path):
     byml_path.unlink()
 
 def process_questproduct(dest_dir: Path):
-    pass
+    byml_path = dest_dir / "Quest" / "QuestProduct.bquestpack"
+    with byml_path.open("rb") as f:
+        questinfo = byml.Byml(f.read()).parse()
+        assert isinstance(questinfo, list)
+
+    for quest in questinfo:
+        dest_path = dest_dir / "Quest" / f"{quest['Name']}.quest.yml"
+        dest_path.parent.mkdir(exist_ok=True, parents=True)
+        with dest_path.open("w") as f:
+            dump_byml_data(quest, f, default_flow_style=False)
+
+    byml_path.unlink()
 
 def process_gamedata(dest_dir: Path):
     pass
