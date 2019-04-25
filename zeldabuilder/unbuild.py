@@ -159,7 +159,48 @@ def convert_messages(dest_dir: Path):
         msbt_path.unlink()
 
 def merge_map_units(dest_dir: Path):
-    pass
+    def add_is_static_to_entries(map_unit: dict, is_static: bool) -> None:
+        for entry in map_unit["Objs"]:
+            entry["IsStatic"] = is_static
+
+    def process_map_unit_unit(unit_dir: Path):
+        unit_name = unit_dir.stem
+        static_p = unit_dir / f"{unit_name}_Static.mubin.yml"
+        dynamic_p = unit_dir / f"{unit_name}_Dynamic.mubin.yml"
+        if not static_p.is_file() or not dynamic_p.is_file():
+            return
+
+        class Loader(yaml.CLoader):
+            pass
+        class Dumper(yaml.CDumper):
+            pass
+        byml.yaml_util.add_constructors(Loader)
+        byml.yaml_util.add_representers(Dumper)
+        with static_p.open("r") as static_f, dynamic_p.open("r") as dynamic_f:
+            static_d = yaml.load(static_f, Loader=Loader)
+            dynamic_d = yaml.load(dynamic_f, Loader=Loader)
+
+        add_is_static_to_entries(static_d, is_static=True)
+        add_is_static_to_entries(dynamic_d, is_static=False)
+
+        objs = sorted(static_d["Objs"] + dynamic_d["Objs"], key=lambda obj: obj["HashId"])
+        rails = sorted(static_d["Rails"] + dynamic_d["Rails"], key=lambda rail: rail["HashId"])
+        merged_map_unit: dict = dict()
+        for prop in ["LocationPosX", "LocationPosZ", "LocationSize"]:
+            if prop in static_d:
+                merged_map_unit[prop] = static_d[prop]
+        merged_map_unit["Objs"] = objs
+        merged_map_unit["Rails"] = rails
+
+        merged_p = unit_dir / f"{unit_name}.mubin.yml"
+        with merged_p.open("w") as f:
+            yaml.dump(merged_map_unit, f, Dumper=Dumper, allow_unicode=True, encoding="utf-8")
+
+        static_p.unlink()
+        dynamic_p.unlink()
+
+    Parallel(n_jobs=_num_cores, verbose=10, batch_size=1)(delayed(process_map_unit_unit)(unit_dir)
+        for unit_dir in (dest_dir / "Map").glob("*/*") if unit_dir.is_dir())
 
 def process_actorinfo(dest_dir: Path, platform: str):
     pass
