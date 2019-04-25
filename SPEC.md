@@ -125,9 +125,29 @@ Finally, the Actor/ActorInfo.product.byml is to be removed from the pseudo-sourc
 
 #### Event/EventInfo.product.byml
 
+Unlike actors, it is more complicated to determine which events are development events and how to handle them. Moreover, keeping complete metadata allows event editing tools to avoid having to parse other related event files. Thus, the current version of this specification opts for a simple split process for EventInfo.
+
+Event tools should update EventInfo after any event flow edit.
+
+For each event entry in Event/EventInfo.product.byml, a new file containing the entire event entry is to be created and stored at `Event/EventMeta/{event_name}/{entry_point_name}.yml`.
+
+Finally, the Event/EventInfo.product.byml is to be removed from the pseudo-source tree.
+
 #### Quest/QuestProduct.bquestpack
 
+For each quest entry in Quest/QuestProduct.bquestpack, a new file containing the entire quest entry is to be created and stored at `Quest/{quest_name}.quest.yml`.
+
+Finally, the Quest/QuestProduct.bquestpack is to be removed from the pseudo-source tree.
+
 #### GameData resources
+
+savedataformat.sarc and ShopGameDataInfo.byml are to be removed from the pseudo-source as they are automatically generated from the GameData configuration files, map units and shop files.
+
+##### gamedata.sarc
+
+bgdata files must be merged based on their file name. They are to be named using the pattern `filename_%d.bgdata` --> `filename.yml`.
+
+For example, `bool_data_0.bgdata`, `bool_data_1.bgdata`, and `bool_data_2.bgdata` should be merged into a single `bool_data.yml` file. Note that the `revival_bool_data_%d` files are separate even though `bool_data` and `revival_bool_data` both contain boolean GameData flags.
 
 #### AAMP and BYML resources
 

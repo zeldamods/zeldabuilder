@@ -7,13 +7,6 @@
 
   note: extracted ActorParam keys appear to follow the naming convention: table name (camelCase) + parameter name
 
-#### Unbuilder
-* generate files from scratch:
-  * dev events
-  * EventInfo
-  * QuestProduct -> one file per quest. .quest.yml
-  * GameData -> split by flag type, support extra include directories, get rid of revival flags (autogenerate them)
-
 #### Builder
 * figure this out.
 
