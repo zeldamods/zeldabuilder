@@ -303,7 +303,21 @@ def process_actorinfo(dest_dir: Path, platform: str, other_platform_actorinfo_pa
     actorinfo_byml.unlink()
 
 def process_eventinfo(dest_dir: Path):
-    pass
+    byml_path = dest_dir / "Event" / "EventInfo.product.byml"
+    with byml_path.open("rb") as f:
+        eventinfo = byml.Byml(f.read()).parse()
+        assert isinstance(eventinfo, dict)
+
+    for merged_event_name, event in eventinfo.items():
+        event_name, entry_name = merged_event_name.split("<")
+        entry_name = entry_name[:-1]
+
+        dest_path = dest_dir / "Event" / "EventMeta" / event_name / f"{entry_name}.yml"
+        dest_path.parent.mkdir(exist_ok=True, parents=True)
+        with dest_path.open("w") as f:
+            dump_byml_data(event, f, default_flow_style=False)
+
+    byml_path.unlink()
 
 def process_questproduct(dest_dir: Path):
     pass
