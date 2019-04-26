@@ -60,7 +60,8 @@ _UNHANDLED_CONTENT_PREFIXES = [
 ]
 
 def is_unhandled_content(path: Path):
-    s = str(path)
+    s = path.as_posix()
+    # Exceptions
     if s == "System/Version.txt" or s == "System/AocVersion.txt":
         return False
     for prefix in _UNHANDLED_CONTENT_PREFIXES:
@@ -116,7 +117,7 @@ def convert_binary_to_text(rel_path: Path, data: bytes) -> typing.Tuple[str, typ
     return _NO_CONVERSION
 
 def change_paths_for_aoc_map_units(path: Path):
-    s = str(path)
+    s = path.as_posix()
     s = s.replace("Map/MainField", "Map/AocMainField")
     return Path(s)
 
@@ -166,7 +167,7 @@ def unbuild_resources(src_rom_dir: Path, dest_dir: Path, is_aoc: bool):
 
 def remove_unneeded_aoc_suffixes(dest_dir: Path):
     for path in dest_dir.glob("**/*.aoc.*"):
-        non_aoc_path = Path(re.sub("\\.aoc\\.(.*)$", ".\\1", str(path)))
+        non_aoc_path = Path(re.sub("\\.aoc\\.(.*)$", ".\\1", path.as_posix()))
         # Only move .aoc.* to the non AoC path if the files are the same.
         if non_aoc_path.is_file():
             if path.stat().st_size != non_aoc_path.stat().st_size:
